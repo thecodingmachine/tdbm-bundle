@@ -1,0 +1,40 @@
+{
+  "name" : "thecodingmachine/tdbm-bundle",
+  "description" : "A Symfony bundle for TDBM.",
+  "keywords" : [
+    "ORM",
+    "persistence",
+    "DAO",
+    "bean",
+    "model",
+    "TDBM",
+    "Symfony",
+    "bundle"
+  ],
+  "homepage" : "https://thecodingmachine.github.io/tdbm",
+  "type" : "library",
+  "license" : "MIT",
+  "authors" : [{
+    "name" : "David Négrier",
+    "email" : "d.negrier@thecodingmachine.com",
+    "homepage" : "http://mouf-php.com"
+  }
+  ],
+  "require" : {
+    "php" : ">=7.1",
+    "thecodingmachine/tdbm" : "^5.0",
+    "doctrine/doctrine-bundle": "^1.9"
+  },
+  "autoload" : {
+    "psr-4" : {
+      "TheCodingMachine\\TDBM\\Bundle\\" : ""
+    }
+  },
+  "extra": {
+    "branch-alias": {
+      "dev-master": "5.0.x-dev"
+    }
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true
+}

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services
+                               http://symfony.com/schema/dic/services/services-1.0.xsd"
+>
+
+    <services>
+        <defaults autowire="true" autoconfigure="true" public="false" />
+        
+        <service id="TheCodingMachine\TDBM\Configuration" class="TheCodingMachine\TDBM\Configuration">
+            <argument></argument> <!-- will be filled in with tdbm.bean_namespace dynamically -->
+            <argument></argument> <!-- will be filled in with tdbm.dao_namespace dynamically -->
+        </service>
+
+        <service id="TheCodingMachine\TDBM\TDBMService" class="TheCodingMachine\TDBM\TDBMService" public="true">
+        </service>
+    </services>
+
+</container>
