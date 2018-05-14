@@ -24,7 +24,7 @@
     "php" : ">=7.1",
     "thecodingmachine/tdbm" : "^5.0",
     "doctrine/doctrine-bundle": "^1.9",
-    "doctrine/orm": "^2 || ^3"
+    "doctrine/orm": "*"
   },
   "autoload" : {
     "psr-4" : {

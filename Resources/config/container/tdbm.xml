@@ -14,7 +14,19 @@
             <argument></argument> <!-- will be filled in with tdbm.dao_namespace dynamically -->
         </service>
 
+        <service id="TheCodingMachine\TDBM\ConfigurationInterface" alias="TheCodingMachine\TDBM\Configuration">
+        </service>
+
+        <service id="TheCodingMachine\TDBM\Utils\NamingStrategyInterface" alias="TheCodingMachine\TDBM\Utils\DefaultNamingStrategy">
+        </service>
+
+        <service id="TheCodingMachine\TDBM\Utils\DefaultNamingStrategy" class="TheCodingMachine\TDBM\Utils\DefaultNamingStrategy" />
+
         <service id="TheCodingMachine\TDBM\TDBMService" class="TheCodingMachine\TDBM\TDBMService" public="true">
+        </service>
+
+        <service id="TheCodingMachine\TDBM\Commands\GenerateCommand" class="TheCodingMachine\TDBM\Commands\GenerateCommand" public="true">
+            <tag name="console.command"></tag>
         </service>
     </services>
 

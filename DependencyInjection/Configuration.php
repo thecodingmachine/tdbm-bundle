@@ -15,7 +15,7 @@ class Configuration implements ConfigurationInterface
 
         $rootNode
             ->children()
-            ->integerNode('dao_namespace')->end()
+            ->scalarNode('dao_namespace')->end()
             ->scalarNode('bean_namespace')->end()
             ->end()
         ;
