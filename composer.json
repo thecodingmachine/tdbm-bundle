@@ -12,7 +12,7 @@
     "bundle"
   ],
   "homepage" : "https://thecodingmachine.github.io/tdbm",
-  "type" : "library",
+  "type" : "symfony-bundle",
   "license" : "MIT",
   "authors" : [{
     "name" : "David Négrier",
