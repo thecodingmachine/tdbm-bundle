@@ -20,13 +20,25 @@
         <service id="TheCodingMachine\TDBM\Utils\NamingStrategyInterface" alias="TheCodingMachine\TDBM\Utils\DefaultNamingStrategy">
         </service>
 
-        <service id="TheCodingMachine\TDBM\Utils\DefaultNamingStrategy" class="TheCodingMachine\TDBM\Utils\DefaultNamingStrategy" />
+        <service id="TheCodingMachine\TDBM\Utils\DefaultNamingStrategy" class="TheCodingMachine\TDBM\Utils\DefaultNamingStrategy">
+            <argument key="$schemaManager" type="service" id="tdbm.SchemaManager"></argument>
+        </service>
 
         <service id="TheCodingMachine\TDBM\TDBMService" class="TheCodingMachine\TDBM\TDBMService" public="true">
         </service>
 
         <service id="TheCodingMachine\TDBM\Commands\GenerateCommand" class="TheCodingMachine\TDBM\Commands\GenerateCommand" public="true">
             <tag name="console.command"></tag>
+        </service>
+
+        <service id="TheCodingMachine\TDBM\Utils\Annotation\AnnotationParser">
+            <factory class="TheCodingMachine\TDBM\Utils\Annotation\AnnotationParser" method="buildWithDefaultAnnotations" />
+            <argument type="collection"></argument>
+        </service>
+
+
+        <service id="tdbm.SchemaManager" class="Doctrine\DBAL\Schema\AbstractSchemaManager">
+            <factory service="doctrine.dbal.default_connection" method="getSchemaManager" />
         </service>
     </services>
 
