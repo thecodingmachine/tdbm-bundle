@@ -12,6 +12,9 @@
         <service id="TheCodingMachine\TDBM\Configuration" class="TheCodingMachine\TDBM\Configuration">
             <argument></argument> <!-- will be filled in with tdbm.bean_namespace dynamically -->
             <argument></argument> <!-- will be filled in with tdbm.dao_namespace dynamically -->
+            <argument key="$codeGeneratorListeners" type="collection">
+                <argument type="service" id="TheCodingMachine\TDBM\Bundle\Utils\SymfonyCodeGeneratorListener"/>
+            </argument>
         </service>
 
         <service id="TheCodingMachine\TDBM\ConfigurationInterface" alias="TheCodingMachine\TDBM\Configuration">
@@ -40,6 +43,8 @@
         <service id="tdbm.SchemaManager" class="Doctrine\DBAL\Schema\AbstractSchemaManager">
             <factory service="doctrine.dbal.default_connection" method="getSchemaManager" />
         </service>
+
+        <service id="TheCodingMachine\TDBM\Bundle\Utils\SymfonyCodeGeneratorListener" />
     </services>
 
 </container>
