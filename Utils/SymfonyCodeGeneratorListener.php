@@ -8,6 +8,8 @@ use Symfony\Contracts\Service\ServiceSubscriberInterface;
 use TheCodingMachine\TDBM\ConfigurationInterface;
 use TheCodingMachine\TDBM\Utils\BaseCodeGeneratorListener;
 use TheCodingMachine\TDBM\Utils\BeanDescriptor;
+use Zend\Code\Generator\DocBlock\Tag\ReturnTag;
+use Zend\Code\Generator\DocBlockGenerator;
 use Zend\Code\Generator\FileGenerator;
 use Zend\Code\Generator\MethodGenerator;
 use function var_export;
@@ -36,7 +38,14 @@ class SymfonyCodeGeneratorListener extends BaseCodeGeneratorListener
             $getterBody
         );
         $method->setStatic(true);
-        $method->setReturnType('void');
+        $method->setDocBlock(new DocBlockGenerator(
+            null,
+            null,
+            [
+                new ReturnTag([ 'array<string,string>' ])
+            ]
+        ));
+        $method->setReturnType('array');
         $class->addMethodFromGenerator($method);
 
         return $fileGenerator;
