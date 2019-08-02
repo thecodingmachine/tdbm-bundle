@@ -27,7 +27,6 @@ class SymfonyCodeGeneratorListenerTest extends TestCase
 
         $file = $codeGeneratorListener->onDaoFactoryGenerated($file, [$beanDescriptor], $configuration);
 
-        var_dump($file->getClass()->getImplementedInterfaces());
         $this->assertContains(ServiceSubscriberInterface::class, $file->getClass()->getImplementedInterfaces());
         $this->assertContains(<<<CODE
 return [
