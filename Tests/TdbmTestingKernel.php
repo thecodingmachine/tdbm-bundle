@@ -10,9 +10,7 @@ use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\Routing\RouteCollectionBuilder;
-use TheCodingMachine\Graphqlite\Bundle\GraphqliteBundle;
 use TheCodingMachine\TDBM\Bundle\TdbmBundle;
-use TheCodingMachine\TDBM\Bundle\TdbmGraphqlBundle;
 
 class TdbmTestingKernel extends Kernel
 {
