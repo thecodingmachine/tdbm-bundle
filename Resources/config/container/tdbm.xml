@@ -15,8 +15,19 @@
             <argument key="$codeGeneratorListeners" type="collection">
                 <argument type="service" id="TheCodingMachine\TDBM\Bundle\Utils\SymfonyCodeGeneratorListener"/>
             </argument>
+            <argument key="$cache" type="service" id="tdbm.cache"></argument>
         </service>
 
+        <service id="tdbm.cache" class="Doctrine\Common\Cache\FilesystemCache">
+            <argument>%kernel.project_dir%/var/cache/tdbm</argument>
+        </service>
+
+
+        <service id="tdbm.cacheclearer" class="TheCodingMachine\TDBM\Bundle\Utils\DoctrineCacheClearer">
+            <argument type="service" id="tdbm.cache" />
+            <tag name="kernel.cache_clearer"/>
+        </service>
+        
         <service id="TheCodingMachine\TDBM\ConfigurationInterface" alias="TheCodingMachine\TDBM\Configuration">
         </service>
 

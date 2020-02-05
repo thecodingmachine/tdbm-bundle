@@ -4,7 +4,6 @@ namespace TheCodingMachine\TDBM\Bundle\Tests;
 
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
-use TheCodingMachine\GraphQLite\Schema;
 use TheCodingMachine\TDBM\TDBMService;
 
 class FunctionalTest extends TestCase
