@@ -28,7 +28,7 @@ class SymfonyCodeGeneratorListenerTest extends TestCase
         $file = $codeGeneratorListener->onDaoFactoryGenerated($file, [$beanDescriptor], $configuration);
 
         $this->assertContains(ServiceSubscriberInterface::class, $file->getClass()->getImplementedInterfaces());
-        $this->assertContains(<<<CODE
+        $this->assertStringContainsString(<<<CODE
 return [
     'App\\\\Dao\\\\FooDao' => 'App\\\\Dao\\\\FooDao',
 ];
