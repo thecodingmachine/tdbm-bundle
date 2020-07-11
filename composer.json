@@ -35,7 +35,7 @@
     "phpstan/phpstan": "^0.12"
   },
   "scripts": {
-    "phpstan": "phpstan analyse TdbmBundle.php DependencyInjection/ Resources/ Utils/ -c phpstan.neon --level=7 --no-progress"
+    "phpstan": "phpstan analyse TdbmBundle.php DependencyInjection/ Resources/ Utils/ -c phpstan.neon --level=8 --no-progress"
   },
   "autoload" : {
     "psr-4" : {
