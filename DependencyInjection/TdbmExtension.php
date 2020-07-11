@@ -15,9 +15,11 @@ class TdbmExtension extends Extension
     /**
      * Loads a specific configuration.
      *
-     * @throws \InvalidArgumentException When provided tag is not defined in this extension
+     * @param mixed[] $configs
+     * @param ContainerBuilder $container
+     * @throws \Exception
      */
-    public function load(array $configs, ContainerBuilder $container)
+    public function load(array $configs, ContainerBuilder $container): void
     {
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
