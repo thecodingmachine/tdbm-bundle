@@ -56,7 +56,7 @@
         </service>
 
         <service id="TheCodingMachine\TDBM\Schema\LockFileSchemaManager" decorates="tdbm.SchemaManager">
-            <argument type="service" id=".inner"/>
+            <argument type="service" id="TheCodingMachine\TDBM\Schema\LockFileSchemaManager.inner"/>
             <argument type="service" id="TheCodingMachine\TDBM\SchemaLockFileDumper"/>
         </service>
 
