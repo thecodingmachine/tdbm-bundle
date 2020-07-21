@@ -8,7 +8,7 @@
 
     <services>
         <defaults autowire="true" autoconfigure="true" public="false" />
-        
+
         <service id="TheCodingMachine\TDBM\Configuration" class="TheCodingMachine\TDBM\Configuration">
             <argument></argument> <!-- will be filled in with tdbm.bean_namespace dynamically -->
             <argument></argument> <!-- will be filled in with tdbm.dao_namespace dynamically -->
@@ -27,7 +27,7 @@
             <argument type="service" id="tdbm.cache" />
             <tag name="kernel.cache_clearer"/>
         </service>
-        
+
         <service id="TheCodingMachine\TDBM\ConfigurationInterface" alias="TheCodingMachine\TDBM\Configuration">
         </service>
 
@@ -53,6 +53,17 @@
 
         <service id="tdbm.SchemaManager" class="Doctrine\DBAL\Schema\AbstractSchemaManager">
             <factory service="doctrine.dbal.default_connection" method="getSchemaManager" />
+        </service>
+
+        <service id="TheCodingMachine\TDBM\Schema\LockFileSchemaManager" decorates="tdbm.SchemaManager">
+            <argument type="service" id=".inner"/>
+            <argument type="service" id="TheCodingMachine\TDBM\SchemaLockFileDumper"/>
+        </service>
+
+        <service id="TheCodingMachine\TDBM\SchemaLockFileDumper">
+            <argument type="service" id="doctrine.dbal.default_connection"/>
+            <argument type="service" id="tdbm.cache"/>
+            <argument>%kernel.project_dir%/tdbm.lock.yml</argument>
         </service>
 
         <service id="TheCodingMachine\TDBM\Bundle\Utils\SymfonyCodeGeneratorListener" />
