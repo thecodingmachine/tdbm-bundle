@@ -3,6 +3,7 @@
 
 namespace TheCodingMachine\TDBM\Bundle\DependencyInjection;
 
+use Symfony\Component\Config\Definition\Builder\NodeBuilder;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
@@ -13,8 +14,21 @@ class Configuration implements ConfigurationInterface
         $treeBuilder = new TreeBuilder('tdbm');
         $rootNode = $treeBuilder->getRootNode();
 
-        $rootNode
-            ->children()
+        $rootNodeChildren = $rootNode->children();
+        $this->buildServiceNode($rootNodeChildren);
+
+        $rootNodeServices = $rootNodeChildren->arrayNode('services')->arrayPrototype()->children();
+        $this->buildServiceNode($rootNodeServices);
+        $rootNodeServices->end()->end()->end();
+
+        $rootNodeChildren->end();
+
+        return $treeBuilder;
+    }
+
+    private function buildServiceNode(NodeBuilder $serviceNode): void
+    {
+        $serviceNode
             ->scalarNode('dao_namespace')->defaultValue('App\\Daos')->end()
             ->scalarNode('bean_namespace')->defaultValue('App\\Beans')->end()
             ->arrayNode('naming')
@@ -29,11 +43,8 @@ class Configuration implements ConfigurationInterface
                     ->scalarNode('base_dao_suffix')->defaultValue('Dao')->end()
                     ->arrayNode('exceptions')
                         ->prototype('scalar')->end()
+                    ->end()
                 ->end()
-            ->end()
-            ->end()
-        ;
-
-        return $treeBuilder;
+            ->end();
     }
 }
