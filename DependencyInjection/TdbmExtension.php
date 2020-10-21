@@ -45,14 +45,13 @@ class TdbmExtension extends Extension
         $container->setDefinition('tdbm.cacheclearer', $this->getCacheClearerDefinition());
         $container->setAlias(ConfigurationInterface::class, self::DEFAULT_CONFIGURATION_ID);
         $container->setAlias(NamingStrategyInterface::class, self::DEFAULT_NAMING_STRATEGY_ID);
-        $container->setDefinition(GenerateCommand::class, $this->getGenerateCommandDefinition());
         $container->setDefinition(AnnotationParser::class, $this->getAnnotationParserDefinition());
         $container->setDefinition(SymfonyCodeGeneratorListener::class, $this->nD(SymfonyCodeGeneratorListener::class));
 
         $container->addDefinitions($this->getDatabaseDefinitions('', $config->getDefaultConfiguration()));
 
         foreach ($config->getDatabases() as $databaseIdentifier => $databaseConfiguration) {
-            $container->addDefinitions($this->getDatabaseDefinitions('.' . $databaseIdentifier, $databaseConfiguration));
+            $container->addDefinitions($this->getDatabaseDefinitions($databaseIdentifier, $databaseConfiguration));
         }
     }
 
@@ -72,8 +71,11 @@ class TdbmExtension extends Extension
     /**
      * @return array<string, Definition>
      */
-    private function getDatabaseDefinitions(string $identifierSuffix, ConnectionConfiguration $config): array
+    private function getDatabaseDefinitions(string $identifier, ConnectionConfiguration $config): array
     {
+        $identifierSuffix = $identifier === '' ? '' : '.' . $identifier;
+        $commandName = $identifier === '' ? 'tdbm:generate' : 'tdbm:generate:' . $identifier;
+
         $configurationServiceId = self::DEFAULT_CONFIGURATION_ID . $identifierSuffix;
         $schemaManagerServiceId = 'tdbm.SchemaManager' . $identifierSuffix;
         $connectionServiceId = $config->getConnection();
@@ -84,6 +86,7 @@ class TdbmExtension extends Extension
             $configurationServiceId => $this->getConfigurationDefinition($config, $namingStrategyServiceId),
             $namingStrategyServiceId => $this->getNamingStrategyDefinition($config, $schemaManagerServiceId),
             TDBMService::class . $identifierSuffix => $this->getTDBMServiceDefinition($configurationServiceId),
+            GenerateCommand::class . $identifierSuffix => $this->getGenerateCommandDefinition($commandName, $configurationServiceId),
             $schemaManagerServiceId => $this->getSchemaManagerDefinition($connectionServiceId),
             LockFileSchemaManager::class . $identifierSuffix => $this->getLockFileSchemaManagerDefinition($schemaLockFileDumperServiceId),
             $schemaLockFileDumperServiceId => $this->getSchemaLockFileDumperDefinition($connectionServiceId, 'tdbm' . $identifierSuffix . '.lock.yml'),
@@ -142,12 +145,13 @@ class TdbmExtension extends Extension
         return $tdbmService;
     }
 
-    private function getGenerateCommandDefinition(): Definition
+    private function getGenerateCommandDefinition(string $commandName, string $configurationServiceId): Definition
     {
-
         $generateCommand = $this->nD(GenerateCommand::class);
+        $generateCommand->setArgument(0, new Reference($configurationServiceId));
         $generateCommand->addTag('console.command');
         $generateCommand->setPublic(true);
+        $generateCommand->addMethodCall('setName', [$commandName]);
         return $generateCommand;
     }
 

@@ -60,4 +60,16 @@ class FunctionalTest extends TestCase
             $processor->processConfiguration($configuration, [['databases' => ['test1' => [], 'test2' => []]]])
         );
     }
+
+    public function testExceptionsConfiguration(): void
+    {
+        $processor = new Processor();
+        $configuration = new Configuration();
+
+        $expected = self::DEFAULT_CONFIGURATION;
+        $expected['databases'] = [];
+        $expected['naming']['exceptions'] = ['object' => 'AnObject'];
+
+        $this->assertEquals($expected, $processor->processConfiguration($configuration, [['naming' => ['exceptions' => ['object' => 'AnObject']]]]));
+    }
 }
