@@ -6,11 +6,9 @@ namespace TheCodingMachine\TDBM\Bundle\DependencyInjection;
 
 use Doctrine\Common\Cache\FilesystemCache;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
-use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Extension\Extension;
-use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
 use TheCodingMachine\TDBM\Bundle\Utils\DoctrineCacheClearer;
 use TheCodingMachine\TDBM\Bundle\Utils\SymfonyCodeGeneratorListener;
@@ -26,6 +24,8 @@ use TheCodingMachine\TDBM\SchemaLockFileDumper;
 
 class TdbmExtension extends Extension
 {
+    private const DEFAULT_CONFIGURATION_ID = TDBMConfiguration::class;
+    private const DEFAULT_NAMING_STRATEGY_ID = DefaultNamingStrategy::class;
 
     /**
      * Loads a specific configuration.
@@ -37,24 +37,23 @@ class TdbmExtension extends Extension
     public function load(array $configs, ContainerBuilder $container): void
     {
         $configuration = new Configuration();
-        $config = $this->processConfiguration($configuration, $configs);
+        $processedConfig = $this->processConfiguration($configuration, $configs);
 
-        $container->setDefinition(TDBMConfiguration::class, $this->getConfigurationDefinition($config));
+        $config = new TdbmExtensionConfiguration($processedConfig);
+
         $container->setDefinition('tdbm.cache', $this->getCacheDefinition());
         $container->setDefinition('tdbm.cacheclearer', $this->getCacheClearerDefinition());
-        $container->setAlias(ConfigurationInterface::class, TDBMConfiguration::class);
-        $container->setAlias(NamingStrategyInterface::class, DefaultNamingStrategy::class);
-        $container->setDefinition(DefaultNamingStrategy::class, $this->getNamingStrategyDefinition($config['naming'] ?? []));
-        $container->setDefinition(TDBMService::class, ($this->nD(TDBMService::class))->setPublic(true));
-        $container->setDefinition(
-            GenerateCommand::class,
-            ($this->nD(GenerateCommand::class))->addTag('console.command')->setPublic(true)
-        );
+        $container->setAlias(ConfigurationInterface::class, self::DEFAULT_CONFIGURATION_ID);
+        $container->setAlias(NamingStrategyInterface::class, self::DEFAULT_NAMING_STRATEGY_ID);
+        $container->setDefinition(GenerateCommand::class, $this->getGenerateCommandDefinition());
         $container->setDefinition(AnnotationParser::class, $this->getAnnotationParserDefinition());
-        $container->setDefinition('tdbm.SchemaManager', $this->getSchemaManagerDefinition());
-        $container->setDefinition(LockFileSchemaManager::class, $this->getLockFileSchemaManagerDefinition());
-        $container->setDefinition(SchemaLockFileDumper::class, $this->getSchemaLockFileDumperDefinition('tdbm.lock.yml'));
         $container->setDefinition(SymfonyCodeGeneratorListener::class, $this->nD(SymfonyCodeGeneratorListener::class));
+
+        $container->addDefinitions($this->getDatabaseDefinitions('', $config->getDefaultConfiguration()));
+
+        foreach ($config->getDatabases() as $databaseIdentifier => $databaseConfiguration) {
+            $container->addDefinitions($this->getDatabaseDefinitions('.' . $databaseIdentifier, $databaseConfiguration));
+        }
     }
 
     /**
@@ -70,11 +69,30 @@ class TdbmExtension extends Extension
         return $definition;
     }
 
-    private function getConfigurationDefinition(array $config): Definition
+    /**
+     * @return array<string, Definition>
+     */
+    private function getDatabaseDefinitions(string $identifiersSuffix, ConnectionConfiguration $config): array
+    {
+        $schemaManagerServiceId = 'tdbm.SchemaManager' . $identifiersSuffix;
+        $connectionServiceId = $config->getConnection();
+
+        return [
+            self::DEFAULT_CONFIGURATION_ID . $identifiersSuffix => $this->getConfigurationDefinition($config),
+            self::DEFAULT_NAMING_STRATEGY_ID . $identifiersSuffix => $this->getNamingStrategyDefinition($config, $schemaManagerServiceId),
+            TDBMService::class . $identifiersSuffix => $this->getTDBMServiceDefinition(),
+            $schemaManagerServiceId => $this->getSchemaManagerDefinition($connectionServiceId),
+            LockFileSchemaManager::class . $identifiersSuffix => $this->getLockFileSchemaManagerDefinition(),
+            SchemaLockFileDumper::class . $identifiersSuffix => $this->getSchemaLockFileDumperDefinition('tdbm' . $identifiersSuffix . '.lock.yml'),
+        ];
+    }
+
+    private function getConfigurationDefinition(ConnectionConfiguration $config): Definition
     {
         $configuration = $this->nD(TDBMConfiguration::class);
-        $configuration->setArgument(0, $config['bean_namespace']);
-        $configuration->setArgument(1, $config['dao_namespace']);
+        $configuration->setArgument(0, $config->getBeanNamespace());
+        $configuration->setArgument(1, $config->getDaoNamespace());
+        $configuration->setArgument('$connection', new Reference($config->getConnection()));
         $configuration->setArgument('$codeGeneratorListeners', [new Reference(SymfonyCodeGeneratorListener::class)]);
         $configuration->setArgument('$cache', new Reference('tdbm.cache'));
         return $configuration;
@@ -95,21 +113,37 @@ class TdbmExtension extends Extension
         return $cache;
     }
 
-    private function getNamingStrategyDefinition(array $config): Definition
+    private function getNamingStrategyDefinition(ConnectionConfiguration $config, string $schemaManagerServiceId): Definition
     {
         $namingStrategy = $this->nD(DefaultNamingStrategy::class);
-        $namingStrategy->setArgument('$schemaManager', new Reference('tdbm.SchemaManager'));
-        $namingStrategy->addMethodCall('setBeanPrefix', [$config['bean_prefix'] ?? '']);
-        $namingStrategy->addMethodCall('setBeanSuffix', [$config['bean_suffix'] ?? '']);
-        $namingStrategy->addMethodCall('setBaseBeanPrefix', [$config['base_bean_prefix'] ?? 'Abstract']);
-        $namingStrategy->addMethodCall('setBaseBeanSuffix', [$config['base_bean_suffix'] ?? '']);
-        $namingStrategy->addMethodCall('setDaoPrefix', [$config['dao_prefix'] ?? '']);
-        $namingStrategy->addMethodCall('setDaoSuffix', [$config['dao_suffix'] ?? 'Dao']);
-        $namingStrategy->addMethodCall('setBaseDaoPrefix', [$config['base_dao_prefix'] ?? 'Abstract']);
-        $namingStrategy->addMethodCall('setBaseDaoSuffix', [$config['base_dao_suffix'] ?? 'Dao']);
-        $namingStrategy->addMethodCall('setExceptions', [$config['exceptions'] ?? []]);
+        $namingStrategy->setArgument('$schemaManager', new Reference($schemaManagerServiceId));
+        $namingStrategy->addMethodCall('setBeanPrefix', [$config->getNamingBeanPrefix()]);
+        $namingStrategy->addMethodCall('setBeanSuffix', [$config->getNamingBeanSuffix()]);
+        $namingStrategy->addMethodCall('setBaseBeanPrefix', [$config->getNamingBaseBeanPrefix()]);
+        $namingStrategy->addMethodCall('setBaseBeanSuffix', [$config->getNamingBaseBeanSuffix()]);
+        $namingStrategy->addMethodCall('setDaoPrefix', [$config->getNamingDaoPrefix()]);
+        $namingStrategy->addMethodCall('setDaoSuffix', [$config->getNamingDaoSuffix()]);
+        $namingStrategy->addMethodCall('setBaseDaoPrefix', [$config->getNamingBaseDaoPrefix()]);
+        $namingStrategy->addMethodCall('setBaseDaoSuffix', [$config->getNamingBaseDaoSuffix()]);
+        $namingStrategy->addMethodCall('setExceptions', [$config->getNamingExceptions()]);
 
         return $namingStrategy;
+    }
+
+    private function getTDBMServiceDefinition(): Definition
+    {
+        $tdbmService = $this->nD(TDBMService::class);
+        $tdbmService->setPublic(true);
+        return $tdbmService;
+    }
+
+    private function getGenerateCommandDefinition(): Definition
+    {
+
+        $generateCommand = $this->nD(GenerateCommand::class);
+        $generateCommand->addTag('console.command');
+        $generateCommand->setPublic(true);
+        return $generateCommand;
     }
 
     private function getAnnotationParserDefinition(): Definition
@@ -121,10 +155,10 @@ class TdbmExtension extends Extension
         return $annotationParser;
     }
 
-    private function getSchemaManagerDefinition(): Definition
+    private function getSchemaManagerDefinition(string $connectionService): Definition
     {
         $schemaManager = $this->nD(AbstractSchemaManager::class);
-        $schemaManager->setFactory([new Reference('doctrine.dbal.default_connection'), 'getSchemaManager']);
+        $schemaManager->setFactory([new Reference($connectionService), 'getSchemaManager']);
 
         return $schemaManager;
     }

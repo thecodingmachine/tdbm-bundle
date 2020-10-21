@@ -15,9 +15,10 @@ class Configuration implements ConfigurationInterface
         $rootNode = $treeBuilder->getRootNode();
 
         $rootNodeChildren = $rootNode->children();
+
         $this->buildServiceNode($rootNodeChildren);
 
-        $rootNodeServices = $rootNodeChildren->arrayNode('services')->arrayPrototype()->children();
+        $rootNodeServices = $rootNodeChildren->arrayNode('databases')->arrayPrototype()->children();
         $this->buildServiceNode($rootNodeServices);
         $rootNodeServices->end()->end()->end();
 
@@ -31,7 +32,9 @@ class Configuration implements ConfigurationInterface
         $serviceNode
             ->scalarNode('dao_namespace')->defaultValue('App\\Daos')->end()
             ->scalarNode('bean_namespace')->defaultValue('App\\Beans')->end()
+            ->scalarNode('connection')->defaultValue('doctrine.dbal.default_connection')->end()
             ->arrayNode('naming')
+                ->addDefaultsIfNotSet()
                 ->children()
                     ->scalarNode('bean_prefix')->defaultValue('')->end()
                     ->scalarNode('bean_suffix')->defaultValue('')->end()
