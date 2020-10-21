@@ -72,27 +72,31 @@ class TdbmExtension extends Extension
     /**
      * @return array<string, Definition>
      */
-    private function getDatabaseDefinitions(string $identifiersSuffix, ConnectionConfiguration $config): array
+    private function getDatabaseDefinitions(string $identifierSuffix, ConnectionConfiguration $config): array
     {
-        $schemaManagerServiceId = 'tdbm.SchemaManager' . $identifiersSuffix;
+        $configurationServiceId = self::DEFAULT_CONFIGURATION_ID . $identifierSuffix;
+        $schemaManagerServiceId = 'tdbm.SchemaManager' . $identifierSuffix;
         $connectionServiceId = $config->getConnection();
+        $namingStrategyServiceId = self::DEFAULT_NAMING_STRATEGY_ID . $identifierSuffix;
+        $schemaLockFileDumperServiceId = SchemaLockFileDumper::class . $identifierSuffix;
 
         return [
-            self::DEFAULT_CONFIGURATION_ID . $identifiersSuffix => $this->getConfigurationDefinition($config),
-            self::DEFAULT_NAMING_STRATEGY_ID . $identifiersSuffix => $this->getNamingStrategyDefinition($config, $schemaManagerServiceId),
-            TDBMService::class . $identifiersSuffix => $this->getTDBMServiceDefinition(),
+            $configurationServiceId => $this->getConfigurationDefinition($config, $namingStrategyServiceId),
+            $namingStrategyServiceId => $this->getNamingStrategyDefinition($config, $schemaManagerServiceId),
+            TDBMService::class . $identifierSuffix => $this->getTDBMServiceDefinition($configurationServiceId),
             $schemaManagerServiceId => $this->getSchemaManagerDefinition($connectionServiceId),
-            LockFileSchemaManager::class . $identifiersSuffix => $this->getLockFileSchemaManagerDefinition(),
-            SchemaLockFileDumper::class . $identifiersSuffix => $this->getSchemaLockFileDumperDefinition('tdbm' . $identifiersSuffix . '.lock.yml'),
+            LockFileSchemaManager::class . $identifierSuffix => $this->getLockFileSchemaManagerDefinition($schemaLockFileDumperServiceId),
+            $schemaLockFileDumperServiceId => $this->getSchemaLockFileDumperDefinition($connectionServiceId, 'tdbm' . $identifierSuffix . '.lock.yml'),
         ];
     }
 
-    private function getConfigurationDefinition(ConnectionConfiguration $config): Definition
+    private function getConfigurationDefinition(ConnectionConfiguration $config, string $namingStrategyServiceId): Definition
     {
         $configuration = $this->nD(TDBMConfiguration::class);
         $configuration->setArgument(0, $config->getBeanNamespace());
         $configuration->setArgument(1, $config->getDaoNamespace());
         $configuration->setArgument('$connection', new Reference($config->getConnection()));
+        $configuration->setArgument('$namingStrategy', new Reference($namingStrategyServiceId));
         $configuration->setArgument('$codeGeneratorListeners', [new Reference(SymfonyCodeGeneratorListener::class)]);
         $configuration->setArgument('$cache', new Reference('tdbm.cache'));
         return $configuration;
@@ -130,9 +134,10 @@ class TdbmExtension extends Extension
         return $namingStrategy;
     }
 
-    private function getTDBMServiceDefinition(): Definition
+    private function getTDBMServiceDefinition(string $configurationServiceId): Definition
     {
         $tdbmService = $this->nD(TDBMService::class);
+        $tdbmService->setArgument(0, new Reference($configurationServiceId));
         $tdbmService->setPublic(true);
         return $tdbmService;
     }
@@ -155,27 +160,27 @@ class TdbmExtension extends Extension
         return $annotationParser;
     }
 
-    private function getSchemaManagerDefinition(string $connectionService): Definition
+    private function getSchemaManagerDefinition(string $connectionServiceId): Definition
     {
         $schemaManager = $this->nD(AbstractSchemaManager::class);
-        $schemaManager->setFactory([new Reference($connectionService), 'getSchemaManager']);
+        $schemaManager->setFactory([new Reference($connectionServiceId), 'getSchemaManager']);
 
         return $schemaManager;
     }
 
-    private function getLockFileSchemaManagerDefinition(): Definition
+    private function getLockFileSchemaManagerDefinition(string $schemaLockFileDumperServiceId): Definition
     {
         $lockFileSchemaManager = $this->nD(LockFileSchemaManager::class);
         $lockFileSchemaManager->setArgument(0, new Reference('TheCodingMachine\TDBM\Schema\LockFileSchemaManager.inner'));
-        $lockFileSchemaManager->setArgument(1, new Reference(SchemaLockFileDumper::class));
+        $lockFileSchemaManager->setArgument(1, new Reference($schemaLockFileDumperServiceId));
 
         return $lockFileSchemaManager;
     }
 
-    private function getSchemaLockFileDumperDefinition(string $lockFileName): Definition
+    private function getSchemaLockFileDumperDefinition(string $connectionServiceId, string $lockFileName): Definition
     {
         $lockFileSchemaManager = $this->nD(SchemaLockFileDumper::class);
-        $lockFileSchemaManager->setArgument(0, new Reference('doctrine.dbal.default_connection'));
+        $lockFileSchemaManager->setArgument(0, new Reference($connectionServiceId));
         $lockFileSchemaManager->setArgument(1, new Reference('tdbm.cache'));
         $lockFileSchemaManager->setArgument(2, '%kernel.project_dir%/' . $lockFileName);
 
