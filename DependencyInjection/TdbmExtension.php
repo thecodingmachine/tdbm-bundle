@@ -57,6 +57,8 @@ class TdbmExtension extends Extension
 
     /**
      * Utility function to create a `new Definition()` with default values
+     *
+     * @param mixed[] $arguments
      */
     private function nD(string $class = null, array $arguments = []): Definition
     {

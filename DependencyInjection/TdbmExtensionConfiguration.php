@@ -13,6 +13,9 @@ class TdbmExtensionConfiguration
     /** @var array<string, ConnectionConfiguration> */
     private $databases;
 
+    /**
+     * @param array<string, mixed> $extensionParams
+     */
     public function __construct(array $extensionParams)
     {
         $this->defaultConfiguration = new ConnectionConfiguration($extensionParams);

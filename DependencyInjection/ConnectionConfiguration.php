@@ -32,6 +32,9 @@ class ConnectionConfiguration
     /** @var array<string, string> */
     private $namingExceptions;
 
+    /**
+     * @param array<string, mixed> $connectionParams
+     */
     public function __construct(array $connectionParams)
     {
         $this->daoNamespace = $connectionParams['dao_namespace'];
