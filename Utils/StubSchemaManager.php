@@ -3,6 +3,7 @@
 namespace TheCodingMachine\TDBM\Bundle\Utils;
 
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
+use Doctrine\DBAL\Schema\Column;
 use Doctrine\DBAL\Schema\Schema;
 
 /**
@@ -10,6 +11,9 @@ use Doctrine\DBAL\Schema\Schema;
  */
 class StubSchemaManager extends AbstractSchemaManager
 {
+    /**
+     * @var Schema
+     */
     private $schema;
 
     public function __construct(Schema $schema)
@@ -30,11 +34,12 @@ class StubSchemaManager extends AbstractSchemaManager
     /**
      * Gets Table Column Definition.
      *
-     * @param array $tableColumn
+     * @param mixed[] $tableColumn
      *
      * @return \Doctrine\DBAL\Schema\Column
      */
-    protected function _getPortableTableColumnDefinition($tableColumn)
+    protected function _getPortableTableColumnDefinition($tableColumn): Column
     {
+        throw new \RuntimeException('Not implemented');
     }
 }

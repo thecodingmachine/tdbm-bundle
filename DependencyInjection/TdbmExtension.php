@@ -102,12 +102,12 @@ class TdbmExtension extends Extension
         // Now let's create the DAOs.
         $tdbmLockFilePath = $this->getLockFilePath($config->getConnection());
 
+        $daos = [];
         if (file_exists($tdbmLockFilePath)) {
             $schemaVersionControlService = new SchemaVersionControlService(new Connection([], new Driver()), $tdbmLockFilePath);
             $schema = $schemaVersionControlService->loadSchemaFile();
             $namingStrategy = $this->getNamingStrategy($config, $schema);
 
-            $daos = [];
             foreach ($schema->getTables() as $table) {
                 $className = ltrim($config->getDaoNamespace(), '\\').'\\'.$namingStrategy->getDaoClassName($table->getName());
                 if (!class_exists($className)) {
