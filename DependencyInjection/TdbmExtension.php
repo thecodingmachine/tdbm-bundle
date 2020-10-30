@@ -4,8 +4,15 @@
 namespace TheCodingMachine\TDBM\Bundle\DependencyInjection;
 
 
+use BrainDiminished\SchemaVersionControl\SchemaVersionControlService;
 use Doctrine\Common\Cache\FilesystemCache;
+use Doctrine\Common\Cache\VoidCache;
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Driver\Mysqli\Driver;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
+use Doctrine\DBAL\Schema\MySqlSchemaManager;
+use Doctrine\DBAL\Schema\Schema;
+use TheCodingMachine\TDBM\Bundle\Utils\StubSchemaManager;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Extension\Extension;
@@ -22,8 +29,13 @@ use TheCodingMachine\TDBM\Utils\DefaultNamingStrategy;
 use TheCodingMachine\TDBM\Utils\NamingStrategyInterface;
 use TheCodingMachine\TDBM\SchemaLockFileDumper;
 use TheCodingMachine\TDBM\Utils\RootProjectLocator;
+use function class_exists;
+use function file_exists;
+use function ltrim;
 use function strlen;
+use function strpos;
 use function substr;
+use function var_dump;
 
 class TdbmExtension extends Extension
 {
@@ -87,7 +99,27 @@ class TdbmExtension extends Extension
         $namingStrategyServiceId = self::DEFAULT_NAMING_STRATEGY_ID . $identifierSuffix;
         $schemaLockFileDumperServiceId = SchemaLockFileDumper::class . $identifierSuffix;
 
-        return [
+        // Now let's create the DAOs.
+        $tdbmLockFilePath = $this->getLockFilePath($config->getConnection());
+
+        if (file_exists($tdbmLockFilePath)) {
+            $schemaVersionControlService = new SchemaVersionControlService(new Connection([], new Driver()), $tdbmLockFilePath);
+            $schema = $schemaVersionControlService->loadSchemaFile();
+            $namingStrategy = $this->getNamingStrategy($config, $schema);
+
+            $daos = [];
+            foreach ($schema->getTables() as $table) {
+                $className = ltrim($config->getDaoNamespace(), '\\').'\\'.$namingStrategy->getDaoClassName($table->getName());
+                if (!class_exists($className)) {
+                    continue;
+                }
+                $dao = $this->nD($className);
+                $dao->setArgument('$tdbmService', new Reference(TDBMService::class . $identifierSuffix));
+                $daos[$className] = $dao;
+            }
+        }
+
+        return array_merge([
             $configurationServiceId => $this->getConfigurationDefinition($config, $namingStrategyServiceId),
             $namingStrategyServiceId => $this->getNamingStrategyDefinition($config, $schemaManagerServiceId),
             TDBMService::class . $identifierSuffix => $this->getTDBMServiceDefinition($configurationServiceId),
@@ -95,7 +127,7 @@ class TdbmExtension extends Extension
             $schemaManagerServiceId => $this->getSchemaManagerDefinition($connectionServiceId),
             LockFileSchemaManager::class . $identifierSuffix => $this->getLockFileSchemaManagerDefinition($schemaLockFileDumperServiceId),
             $schemaLockFileDumperServiceId => $this->getSchemaLockFileDumperDefinition($connectionServiceId, 'tdbm' . $identifierSuffix . '.lock.yml'),
-        ];
+        ], $daos);
     }
 
     private function getConfigurationDefinition(ConnectionConfiguration $config, string $namingStrategyServiceId): Definition
@@ -110,8 +142,17 @@ class TdbmExtension extends Extension
 
         // Let's name the tdbm lock file after the name of the DBAL connection.
 
-        // A DBAL connection is in the form: "doctrine.dbal.default_connection"
         $connectionName = $config->getConnection();
+
+        if ($connectionName !== 'doctrine.dbal.default_connection') {
+            $configuration->setArgument('$lockFilePath', $this->getLockFilePath($connectionName));
+        }
+
+        return $configuration;
+    }
+
+    private function getLockFilePath(string $connectionName): string {
+        // A DBAL connection is in the form: "doctrine.dbal.default_connection"
         if (strpos($connectionName, 'doctrine.dbal.') === 0) {
             $connectionName = substr($connectionName, 14);
             if (strpos($connectionName, '_connection') === strlen($connectionName) - 11) {
@@ -119,11 +160,11 @@ class TdbmExtension extends Extension
             }
         }
 
-        if ($connectionName !== 'default') {
-            $configuration->setArgument('$lockFilePath', RootProjectLocator::getRootLocationPath().'tdbm.'.$connectionName.'.lock.yml');
+        if ($connectionName === 'default') {
+            return RootProjectLocator::getRootLocationPath().'tdbm.lock.yml';
         }
 
-        return $configuration;
+        return RootProjectLocator::getRootLocationPath().'tdbm.'.$connectionName.'.lock.yml';
     }
 
     private function getCacheDefinition(): Definition
@@ -154,6 +195,22 @@ class TdbmExtension extends Extension
         $namingStrategy->addMethodCall('setBaseDaoPrefix', [$config->getNamingBaseDaoPrefix()]);
         $namingStrategy->addMethodCall('setBaseDaoSuffix', [$config->getNamingBaseDaoSuffix()]);
         $namingStrategy->addMethodCall('setExceptions', [$config->getNamingExceptions()]);
+
+        return $namingStrategy;
+    }
+
+    private function getNamingStrategy(ConnectionConfiguration $config, Schema $schema): NamingStrategyInterface
+    {
+        $namingStrategy = new DefaultNamingStrategy(AnnotationParser::buildWithDefaultAnnotations([]), new StubSchemaManager($schema));
+        $namingStrategy->setBeanPrefix($config->getNamingBeanPrefix());
+        $namingStrategy->setBeanSuffix($config->getNamingBeanSuffix());
+        $namingStrategy->setBaseBeanPrefix($config->getNamingBaseBeanPrefix());
+        $namingStrategy->setBaseBeanSuffix($config->getNamingBaseBeanSuffix());
+        $namingStrategy->setDaoPrefix($config->getNamingDaoPrefix());
+        $namingStrategy->setDaoSuffix($config->getNamingDaoSuffix());
+        $namingStrategy->setBaseDaoPrefix($config->getNamingBaseDaoPrefix());
+        $namingStrategy->setBaseDaoSuffix($config->getNamingBaseDaoSuffix());
+        $namingStrategy->setExceptions($config->getNamingExceptions());
 
         return $namingStrategy;
     }

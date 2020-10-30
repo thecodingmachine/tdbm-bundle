@@ -11,6 +11,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 use TheCodingMachine\TDBM\Bundle\TdbmBundle;
+use function spl_object_hash;
 
 class TdbmTestingKernel extends Kernel
 {
@@ -112,6 +113,6 @@ class TdbmTestingKernel extends Kernel
 
     public function getCacheDir()
     {
-        return __DIR__.'/../cache/'.($this->multiDb?"multidb":"singledb");
+        return __DIR__.'/../cache/'.($this->multiDb?"multidb":"singledb").spl_object_hash($this);
     }
 }

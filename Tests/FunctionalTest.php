@@ -4,15 +4,21 @@ namespace TheCodingMachine\TDBM\Bundle\Tests;
 
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\TestCase;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Config\Definition\Processor;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Tester\ApplicationTester;
 use TheCodingMachine\FluidSchema\TdbmFluidSchema;
 use TheCodingMachine\TDBM\Bundle\DependencyInjection\Configuration;
+use TheCodingMachine\TDBM\Bundle\Tests\Fixtures\PublicService;
+use TheCodingMachine\TDBM\Bundle\Tests\GeneratedDb1\Beans\Country;
+use TheCodingMachine\TDBM\Bundle\Tests\GeneratedDb1\Daos\CountryDao;
+use TheCodingMachine\TDBM\Bundle\Tests\GeneratedDb2\Beans\Person;
+use TheCodingMachine\TDBM\Bundle\Tests\GeneratedDb2\Daos\PersonDao;
 use TheCodingMachine\TDBM\TDBMService;
 use Throwable;
 
-class FunctionalTest extends TestCase
+class FunctionalTest extends KernelTestCase
 {
     private const DEFAULT_CONFIGURATION = [
         'dao_namespace' => 'App\Daos',
@@ -31,13 +37,19 @@ class FunctionalTest extends TestCase
         ],
     ];
 
+    private static $multiDb = false;
+
+    protected static function createKernel(array $options = [])
+    {
+        return new TdbmTestingKernel(self::$multiDb);
+    }
+
     public function testServiceWiring(): void
     {
-        $kernel = new TdbmTestingKernel();
-        $kernel->boot();
-        $container = $kernel->getContainer();
+        self::$multiDb = true;
+        self::bootKernel();
 
-        $tdbmService = $container->get(TDBMService::class);
+        $tdbmService = self::$kernel->getContainer()->get(TDBMService::class);
         $this->assertInstanceOf(TDBMService::class, $tdbmService);
     }
 
@@ -80,9 +92,9 @@ class FunctionalTest extends TestCase
 
     public function testEndToEnd(): void
     {
-        $kernel = new TdbmTestingKernel(true);
-        $kernel->boot();
-        $container = $kernel->getContainer();
+        self::$multiDb = true;
+        self::bootKernel();
+        $container = self::$container;
 
         /**
          * @var Connection $connectionRoot
@@ -135,17 +147,46 @@ class FunctionalTest extends TestCase
             $connection2->executeStatement($sqlStmt);
         }
 
-        $application = new Application($kernel);
+        $application = new Application(self::$kernel);
         $application->setAutoExit(false);
 
         $applicationTester = new ApplicationTester($application);
         $applicationTester->run(['command' => 'tdbm:generate']);
         $this->assertStringContainsString('Finished regenerating DAOs and beans', $applicationTester->getDisplay());
-        $this->assertFileExists(__DIR__.'/../tdbm.lock.yml');
+        $this->assertFileExists(__DIR__ . '/../tdbm.lock.yml');
 
         $applicationTester = new ApplicationTester($application);
         $applicationTester->run(['command' => 'tdbm:generate:other']);
         $this->assertStringContainsString('Finished regenerating DAOs and beans', $applicationTester->getDisplay());
-        $this->assertFileExists(__DIR__.'/../tdbm.other.lock.yml');
+        $this->assertFileExists(__DIR__ . '/../tdbm.other.lock.yml');
+    }
+
+    /**
+     * @depends testEndToEnd
+     */
+    public function testEndToEnd2(): void
+    {
+        self::$multiDb = true;
+        self::bootKernel();
+        $container = self::$container;
+
+        // PublicService is a dirty trick to access CountryDao and PersonDao that are private services.
+        $publicService = $container->get(PublicService::class);
+
+        /**
+         * @var CountryDao $countryDao
+         */
+        $countryDao = $publicService->getCountryDao();
+        $country = new Country('Foo');
+        $countryDao->save($country);
+
+        /**
+         * @var PersonDao $personDao
+         */
+        $personDao = $publicService->getPersonDao();
+        $person = new Person('Foo');
+        $personDao->save($person);
+
+        $this->assertSame(1, $personDao->findAll()->count());
     }
 }
