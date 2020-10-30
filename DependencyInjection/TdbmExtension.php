@@ -21,6 +21,9 @@ use TheCodingMachine\TDBM\Utils\Annotation\AnnotationParser;
 use TheCodingMachine\TDBM\Utils\DefaultNamingStrategy;
 use TheCodingMachine\TDBM\Utils\NamingStrategyInterface;
 use TheCodingMachine\TDBM\SchemaLockFileDumper;
+use TheCodingMachine\TDBM\Utils\RootProjectLocator;
+use function strlen;
+use function substr;
 
 class TdbmExtension extends Extension
 {
@@ -66,7 +69,7 @@ class TdbmExtension extends Extension
         $definition->setAutowired(true);
         $definition->setAutoconfigured(true);
         $definition->setPublic(false);
-        
+
         return $definition;
     }
 
@@ -104,6 +107,22 @@ class TdbmExtension extends Extension
         $configuration->setArgument('$namingStrategy', new Reference($namingStrategyServiceId));
         $configuration->setArgument('$codeGeneratorListeners', [new Reference(SymfonyCodeGeneratorListener::class)]);
         $configuration->setArgument('$cache', new Reference('tdbm.cache'));
+
+        // Let's name the tdbm lock file after the name of the DBAL connection.
+
+        // A DBAL connection is in the form: "doctrine.dbal.default_connection"
+        $connectionName = $config->getConnection();
+        if (strpos($connectionName, 'doctrine.dbal.') === 0) {
+            $connectionName = substr($connectionName, 14);
+            if (strpos($connectionName, '_connection') === strlen($connectionName) - 11) {
+                $connectionName = substr($connectionName, 0, strlen($connectionName) - 11);
+            }
+        }
+
+        if ($connectionName !== 'default') {
+            $configuration->setArgument('$lockFilePath', RootProjectLocator::getRootLocationPath().'tdbm.'.$connectionName.'.lock.yml');
+        }
+
         return $configuration;
     }
 
