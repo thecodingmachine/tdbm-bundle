@@ -14,32 +14,32 @@ use TheCodingMachine\TDBM\Bundle\Tests\GeneratedDb2\Daos\PersonDao;
 class PublicService
 {
     /**
-     * @var CountryDao
+     * @var CountryDao|null
      */
     private $countryDao;
     /**
-     * @var PersonDao
+     * @var PersonDao|null
      */
     private $personDao;
 
-    public function __construct(CountryDao $countryDao, PersonDao $personDao)
+    public function __construct(?CountryDao $countryDao = null, ?PersonDao $personDao = null)
     {
         $this->countryDao = $countryDao;
         $this->personDao = $personDao;
     }
 
     /**
-     * @return CountryDao
+     * @return CountryDao|null
      */
-    public function getCountryDao(): CountryDao
+    public function getCountryDao(): ?CountryDao
     {
         return $this->countryDao;
     }
 
     /**
-     * @return PersonDao
+     * @return PersonDao|null
      */
-    public function getPersonDao(): PersonDao
+    public function getPersonDao(): ?PersonDao
     {
         return $this->personDao;
     }
