@@ -122,7 +122,7 @@ class FunctionalTest extends KernelTestCase
 
         foreach ($sqlStmts as $sqlStmt) {
             //echo $sqlStmt."\n";
-            $connection1->executeStatement($sqlStmt);
+            $connection1->exec($sqlStmt);
         }
 
 
@@ -144,7 +144,7 @@ class FunctionalTest extends KernelTestCase
 
         foreach ($sqlStmts as $sqlStmt) {
             //echo $sqlStmt."\n";
-            $connection2->executeStatement($sqlStmt);
+            $connection2->exec($sqlStmt);
         }
 
         $application = new Application(self::$kernel);
