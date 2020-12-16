@@ -98,6 +98,7 @@ class TdbmExtension extends Extension
         $connectionServiceId = $config->getConnection();
         $namingStrategyServiceId = self::DEFAULT_NAMING_STRATEGY_ID . $identifierSuffix;
         $schemaLockFileDumperServiceId = SchemaLockFileDumper::class . $identifierSuffix;
+        $lockFileSchemaManagerServiceId = LockFileSchemaManager::class . $identifierSuffix;
 
         // Now let's create the DAOs.
         $tdbmLockFilePath = $this->getLockFilePath($config->getConnection());
@@ -121,11 +122,11 @@ class TdbmExtension extends Extension
 
         return array_merge([
             $configurationServiceId => $this->getConfigurationDefinition($config, $namingStrategyServiceId),
-            $namingStrategyServiceId => $this->getNamingStrategyDefinition($config, $schemaManagerServiceId),
+            $namingStrategyServiceId => $this->getNamingStrategyDefinition($config, $lockFileSchemaManagerServiceId),
             TDBMService::class . $identifierSuffix => $this->getTDBMServiceDefinition($configurationServiceId),
             GenerateCommand::class . $identifierSuffix => $this->getGenerateCommandDefinition($commandName, $configurationServiceId),
             $schemaManagerServiceId => $this->getSchemaManagerDefinition($connectionServiceId),
-            LockFileSchemaManager::class . $identifierSuffix => $this->getLockFileSchemaManagerDefinition($schemaLockFileDumperServiceId),
+            $lockFileSchemaManagerServiceId => $this->getLockFileSchemaManagerDefinition($schemaManagerServiceId, $schemaLockFileDumperServiceId),
             $schemaLockFileDumperServiceId => $this->getSchemaLockFileDumperDefinition($connectionServiceId, 'tdbm' . $identifierSuffix . '.lock.yml'),
         ], $daos);
     }
@@ -250,9 +251,10 @@ class TdbmExtension extends Extension
         return $schemaManager;
     }
 
-    private function getLockFileSchemaManagerDefinition(string $schemaLockFileDumperServiceId): Definition
+    private function getLockFileSchemaManagerDefinition(string $schemaManagerServiceId, string $schemaLockFileDumperServiceId): Definition
     {
         $lockFileSchemaManager = $this->nD(LockFileSchemaManager::class);
+        $lockFileSchemaManager->setDecoratedService($schemaManagerServiceId);
         $lockFileSchemaManager->setArgument(0, new Reference('TheCodingMachine\TDBM\Schema\LockFileSchemaManager.inner'));
         $lockFileSchemaManager->setArgument(1, new Reference($schemaLockFileDumperServiceId));
 
