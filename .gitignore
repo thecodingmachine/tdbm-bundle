@@ -1,4 +1,9 @@
+/Tests/GeneratedDb*
 /vendor/
 /composer.lock
 /build
 /cache
+/.phpunit.result.cache
+/var
+/tdbm*.lock.yml
+/phpunit.xml

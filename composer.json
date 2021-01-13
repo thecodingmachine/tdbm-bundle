@@ -32,10 +32,11 @@
     "symfony/security-bundle": "^4.1.9 || ^5",
     "symfony/yaml": "^4.1.9 || ^5",
     "phpunit/phpunit": "^8.5.8",
-    "phpstan/phpstan": "^0.12"
+    "phpstan/phpstan": "^0.12",
+    "thecodingmachine/tdbm-fluid-schema-builder": "^1.0.0"
   },
   "scripts": {
-    "phpstan": "phpstan analyse TdbmBundle.php DependencyInjection/ Resources/ Utils/ -c phpstan.neon --level=8 --no-progress"
+    "phpstan": "phpstan analyse TdbmBundle.php DependencyInjection/ Utils/ -c phpstan.neon --level=8 --no-progress"
   },
   "autoload" : {
     "psr-4" : {

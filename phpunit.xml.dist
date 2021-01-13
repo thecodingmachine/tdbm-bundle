@@ -30,6 +30,8 @@
 
     <php>
         <env name="DATABASE_URL" value="mysql://root:@127.0.0.1:3306/test_tdbmbundle" />
+        <env name="DATABASE_URL2" value="mysql://root:@127.0.0.1:3306/test_tdbmbundle2" />
+        <env name="DATABASE_URL_ROOT" value="mysql://root:@127.0.0.1:3306/" />
     </php>
 
     <logging>
