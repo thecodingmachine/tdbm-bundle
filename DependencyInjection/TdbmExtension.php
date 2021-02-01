@@ -25,7 +25,9 @@ use TheCodingMachine\TDBM\ConfigurationInterface;
 use TheCodingMachine\TDBM\Schema\LockFileSchemaManager;
 use TheCodingMachine\TDBM\TDBMService;
 use TheCodingMachine\TDBM\Utils\Annotation\AnnotationParser;
+use TheCodingMachine\TDBM\Utils\CodeGeneratorListenerInterface;
 use TheCodingMachine\TDBM\Utils\DefaultNamingStrategy;
+use TheCodingMachine\TDBM\Utils\GeneratorListenerInterface;
 use TheCodingMachine\TDBM\Utils\NamingStrategyInterface;
 use TheCodingMachine\TDBM\SchemaLockFileDumper;
 use TheCodingMachine\TDBM\Utils\RootProjectLocator;
@@ -39,6 +41,10 @@ use function var_dump;
 
 class TdbmExtension extends Extension
 {
+    public const TAG_GENERATOR_LISTENER = 'tdbm.generatorListener';
+    public const TAG_CODE_GENERATOR_LISTENER = 'tdbm.codeGeneratorListener';
+    public const TAG_TDBM_CONFIGURATION = 'tdbm.configuration';
+
     private const DEFAULT_CONFIGURATION_ID = TDBMConfiguration::class;
     private const DEFAULT_NAMING_STRATEGY_ID = DefaultNamingStrategy::class;
 
@@ -51,6 +57,9 @@ class TdbmExtension extends Extension
      */
     public function load(array $configs, ContainerBuilder $container): void
     {
+        $container->registerForAutoconfiguration(GeneratorListenerInterface::class)->addTag(self::TAG_GENERATOR_LISTENER);
+        $container->registerForAutoconfiguration(CodeGeneratorListenerInterface::class)->addTag(self::TAG_CODE_GENERATOR_LISTENER);
+
         $configuration = new Configuration();
         $processedConfig = $this->processConfiguration($configuration, $configs);
 
@@ -138,8 +147,8 @@ class TdbmExtension extends Extension
         $configuration->setArgument(1, $config->getDaoNamespace());
         $configuration->setArgument('$connection', new Reference($config->getConnection()));
         $configuration->setArgument('$namingStrategy', new Reference($namingStrategyServiceId));
-        $configuration->setArgument('$codeGeneratorListeners', [new Reference(SymfonyCodeGeneratorListener::class)]);
         $configuration->setArgument('$cache', new Reference('tdbm.cache'));
+        $configuration->addTag(self::TAG_TDBM_CONFIGURATION);
 
         // Let's name the tdbm lock file after the name of the DBAL connection.
 
