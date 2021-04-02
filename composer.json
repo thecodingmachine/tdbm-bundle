@@ -23,8 +23,8 @@
   "require" : {
     "php" : ">=7.2",
     "thecodingmachine/tdbm" : "~5.2.0",
-    "doctrine/doctrine-bundle": "^1.9 || ^2",
-    "doctrine/orm": "^1 || ^2",
+    "doctrine/doctrine-bundle": "^2",
+    "doctrine/orm": "^2",
     "symfony/http-kernel": "^4.1.9 || ^5"
   },
   "require-dev": {
