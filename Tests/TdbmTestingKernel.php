@@ -107,10 +107,6 @@ class TdbmTestingKernel extends Kernel
         $loader->load($confDir.'/{services}_'.$this->environment.self::CONFIG_EXTS, 'glob');
     }
 
-    protected function configureRoutes(RoutingConfigurator $routes)
-    {
-    }
-
     public function getCacheDir()
     {
         return __DIR__.'/../cache/'.($this->multiDb?"multidb":"singledb").spl_object_hash($this);
