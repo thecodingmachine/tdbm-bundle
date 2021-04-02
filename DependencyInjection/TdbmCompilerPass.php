@@ -14,7 +14,7 @@ class TdbmCompilerPass implements CompilerPassInterface
     /**
      * @inheritDoc
      */
-    public function process(ContainerBuilder $container)
+    public function process(ContainerBuilder $container): void
     {
         $generatorListeners = $this->taggedServicesToReferences($container->findTaggedServiceIds(TdbmExtension::TAG_GENERATOR_LISTENER));
         $codeGeneratorListeners = $this->taggedServicesToReferences($container->findTaggedServiceIds(TdbmExtension::TAG_CODE_GENERATOR_LISTENER));

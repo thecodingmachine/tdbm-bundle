@@ -11,7 +11,7 @@ use TheCodingMachine\TDBM\Bundle\DependencyInjection\TdbmCompilerPass;
 
 class TdbmBundle extends Bundle
 {
-    public function build(ContainerBuilder $container)
+    public function build(ContainerBuilder $container): void
     {
         parent::build($container);
 
