@@ -6,8 +6,8 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Contracts\Service\ServiceSubscriberInterface;
 use TheCodingMachine\TDBM\Configuration;
 use TheCodingMachine\TDBM\Utils\BeanDescriptor;
-use Zend\Code\Generator\ClassGenerator;
-use Zend\Code\Generator\FileGenerator;
+use Laminas\Code\Generator\ClassGenerator;
+use Laminas\Code\Generator\FileGenerator;
 
 class SymfonyCodeGeneratorListenerTest extends TestCase
 {

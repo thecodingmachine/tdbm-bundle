@@ -8,10 +8,10 @@ use Symfony\Contracts\Service\ServiceSubscriberInterface;
 use TheCodingMachine\TDBM\ConfigurationInterface;
 use TheCodingMachine\TDBM\Utils\BaseCodeGeneratorListener;
 use TheCodingMachine\TDBM\Utils\BeanDescriptor;
-use Zend\Code\Generator\DocBlock\Tag\ReturnTag;
-use Zend\Code\Generator\DocBlockGenerator;
-use Zend\Code\Generator\FileGenerator;
-use Zend\Code\Generator\MethodGenerator;
+use Laminas\Code\Generator\DocBlock\Tag\ReturnTag;
+use Laminas\Code\Generator\DocBlockGenerator;
+use Laminas\Code\Generator\FileGenerator;
+use Laminas\Code\Generator\MethodGenerator;
 use function var_export;
 
 class SymfonyCodeGeneratorListener extends BaseCodeGeneratorListener
