@@ -29,7 +29,7 @@ class TdbmCompilerPass implements CompilerPassInterface
     }
 
     /**
-     * @param array<string, array> $taggedServices Keys are services ids, this is the output of `ContainerBuilder::findTaggedServiceIds`
+     * @param array<string, mixed[]> $taggedServices Keys are services ids, this is the output of `ContainerBuilder::findTaggedServiceIds`
      * @return array<Reference>
      */
     private function taggedServicesToReferences(array $taggedServices): array
