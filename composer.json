@@ -31,7 +31,7 @@
     "roave/security-advisories": "dev-master",
     "symfony/security-bundle": "^4.1.9 || ^5",
     "symfony/yaml": "^4.1.9 || ^5",
-    "phpunit/phpunit": "^9.5",
+    "phpunit/phpunit": "^11.4",
     "phpstan/phpstan": "^1.2",
     "thecodingmachine/tdbm-fluid-schema-builder": "^1.0.0",
     "symfony/framework-bundle": "^5.2"
