@@ -4,7 +4,6 @@
 namespace TheCodingMachine\TDBM\Bundle\DependencyInjection;
 
 
-use BrainDiminished\SchemaVersionControl\SchemaVersionControlService;
 use Doctrine\Common\Cache\FilesystemCache;
 use Doctrine\Common\Cache\VoidCache;
 use Doctrine\DBAL\Connection;
@@ -23,6 +22,7 @@ use TheCodingMachine\TDBM\Commands\GenerateCommand;
 use TheCodingMachine\TDBM\Configuration as TDBMConfiguration;
 use TheCodingMachine\TDBM\ConfigurationInterface;
 use TheCodingMachine\TDBM\Schema\LockFileSchemaManager;
+use TheCodingMachine\TDBM\SchemaVersionControl\SchemaVersionControlService;
 use TheCodingMachine\TDBM\TDBMService;
 use TheCodingMachine\TDBM\Utils\Annotation\AnnotationParser;
 use TheCodingMachine\TDBM\Utils\CodeGeneratorListenerInterface;
@@ -255,7 +255,7 @@ class TdbmExtension extends Extension
     private function getSchemaManagerDefinition(string $connectionServiceId): Definition
     {
         $schemaManager = $this->nD(AbstractSchemaManager::class);
-        $schemaManager->setFactory([new Reference($connectionServiceId), 'getSchemaManager']);
+        $schemaManager->setFactory([new Reference($connectionServiceId), 'createSchemaManager']);
 
         return $schemaManager;
     }

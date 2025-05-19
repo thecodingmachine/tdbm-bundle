@@ -8,6 +8,7 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Config\Definition\Processor;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Tester\ApplicationTester;
+use Symfony\Component\HttpKernel\KernelInterface;
 use TheCodingMachine\FluidSchema\TdbmFluidSchema;
 use TheCodingMachine\TDBM\Bundle\DependencyInjection\Configuration;
 use TheCodingMachine\TDBM\Bundle\Tests\Fixtures\PublicService;
@@ -39,7 +40,7 @@ class FunctionalTest extends KernelTestCase
 
     private static $multiDb = false;
 
-    protected static function createKernel(array $options = [])
+    protected static function createKernel(array $options = []): KernelInterface
     {
         return new TdbmTestingKernel(self::$multiDb);
     }
@@ -93,23 +94,22 @@ class FunctionalTest extends KernelTestCase
     public function testEndToEnd(): void
     {
         self::$multiDb = true;
-        self::bootKernel();
-        $container = self::$container;
+        $container = self::bootKernel()->getContainer(); // Cannot use self::getContainer() here, as it tries to retrieve test.service_container.
 
         /**
          * @var Connection $connectionRoot
          */
         $connectionRoot = $container->get('doctrine.dbal.root_connection');
 
-        $connectionRoot->getSchemaManager()->dropAndCreateDatabase('test_tdbmbundle');
-        $connectionRoot->getSchemaManager()->dropAndCreateDatabase('test_tdbmbundle2');
+        $connectionRoot->createSchemaManager()->dropAndCreateDatabase('test_tdbmbundle');
+        $connectionRoot->createSchemaManager()->dropAndCreateDatabase('test_tdbmbundle2');
 
         /**
          * @var Connection $connection1
          */
         $connection1 = $container->get('doctrine.dbal.default_connection');
 
-        $fromSchema1 = $connection1->getSchemaManager()->createSchema();
+        $fromSchema1 = $connection1->createSchemaManager()->createSchema();
         $toSchema1 = clone $fromSchema1;
 
         $db = new TdbmFluidSchema($toSchema1, new \TheCodingMachine\FluidSchema\DefaultNamingStrategy($connection1->getDatabasePlatform()));
@@ -131,7 +131,7 @@ class FunctionalTest extends KernelTestCase
          */
         $connection2 = $container->get('doctrine.dbal.other_connection');
 
-        $fromSchema2 = $connection2->getSchemaManager()->createSchema();
+        $fromSchema2 = $connection2->createSchemaManager()->createSchema();
         $toSchema2 = clone $fromSchema2;
 
         $db = new TdbmFluidSchema($toSchema2, new \TheCodingMachine\FluidSchema\DefaultNamingStrategy($connection2->getDatabasePlatform()));
@@ -167,8 +167,7 @@ class FunctionalTest extends KernelTestCase
     public function testEndToEnd2(): void
     {
         self::$multiDb = true;
-        self::bootKernel();
-        $container = self::$container;
+        $container = self::bootKernel()->getContainer(); // Cannot use self::getContainer() here, as it tries to retrieve test.service_container.
 
         // PublicService is a dirty trick to access CountryDao and PersonDao that are private services.
         $publicService = $container->get(PublicService::class);
