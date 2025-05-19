@@ -9,8 +9,8 @@ use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Kernel;
-use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 use TheCodingMachine\TDBM\Bundle\TdbmBundle;
+
 use function spl_object_hash;
 
 class TdbmTestingKernel extends Kernel
@@ -29,7 +29,7 @@ class TdbmTestingKernel extends Kernel
         $this->multiDb = $multiDb;
     }
 
-    public function registerBundles()
+    public function registerBundles(): iterable
     {
         return [
             new \Symfony\Bundle\FrameworkBundle\FrameworkBundle(),
@@ -107,7 +107,7 @@ class TdbmTestingKernel extends Kernel
         $loader->load($confDir.'/{services}_'.$this->environment.self::CONFIG_EXTS, 'glob');
     }
 
-    public function getCacheDir()
+    public function getCacheDir(): string
     {
         return __DIR__.'/../cache/'.($this->multiDb?"multidb":"singledb").spl_object_hash($this);
     }

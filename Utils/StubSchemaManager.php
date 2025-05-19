@@ -2,12 +2,16 @@
 
 namespace TheCodingMachine\TDBM\Bundle\Utils;
 
+use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\Column;
 use Doctrine\DBAL\Schema\Schema;
 
 /**
  * A stub for schema manager that simply returns the schema we are providing.
+ *
+ * @template-covariant T of AbstractPlatform
+ * @extends AbstractSchemaManager<T>
  */
 class StubSchemaManager extends AbstractSchemaManager
 {
