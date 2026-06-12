@@ -20,9 +20,8 @@ class DoctrineCacheClearer implements CacheClearerInterface
 
     /**
      * Clears any caches necessary.
-     * @param string $cacheDir
      */
-    public function clear($cacheDir): void
+    public function clear(string $cacheDir): void
     {
         $this->cache->flushAll();
     }

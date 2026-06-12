@@ -25,16 +25,16 @@
     "thecodingmachine/tdbm": "~6.0.0",
     "doctrine/doctrine-bundle": "^2.2.2",
     "doctrine/orm": "^2",
-    "symfony/http-kernel": "^5.0 || ^6.0"
+    "symfony/http-kernel": "^5.0 || ^6.0 || ^7.0"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest",
-    "symfony/security-bundle": "^5 || ^6",
-    "symfony/yaml": "^5 || ^6",
+    "symfony/security-bundle": "^5 || ^6 || ^7",
+    "symfony/yaml": "^5 || ^6 || ^7",
     "phpunit/phpunit": "^9.5",
     "phpstan/phpstan": "^2.0",
     "thecodingmachine/tdbm-fluid-schema-builder": "^1.0 || ^2.0",
-    "symfony/framework-bundle": "^5.1 || ^6"
+    "symfony/framework-bundle": "^5.1 || ^6 || ^7"
   },
   "scripts": {
     "phpstan": "phpstan analyse TdbmBundle.php DependencyInjection/ Utils/ --level=8 --no-progress"
