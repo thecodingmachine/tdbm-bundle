@@ -7,6 +7,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Config\Definition\Processor;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\ApplicationTester;
 use Symfony\Component\HttpKernel\KernelInterface;
 use TheCodingMachine\FluidSchema\TdbmFluidSchema;
@@ -151,12 +152,12 @@ class FunctionalTest extends KernelTestCase
         $application->setAutoExit(false);
 
         $applicationTester = new ApplicationTester($application);
-        $applicationTester->run(['command' => 'tdbm:generate']);
+        $applicationTester->run(['command' => 'tdbm:generate'], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
         $this->assertStringContainsString('Finished regenerating DAOs and beans', $applicationTester->getDisplay());
         $this->assertFileExists(__DIR__ . '/../tdbm.lock.yml');
 
         $applicationTester = new ApplicationTester($application);
-        $applicationTester->run(['command' => 'tdbm:generate:other']);
+        $applicationTester->run(['command' => 'tdbm:generate:other'], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
         $this->assertStringContainsString('Finished regenerating DAOs and beans', $applicationTester->getDisplay());
         $this->assertFileExists(__DIR__ . '/../tdbm.other.lock.yml');
     }
