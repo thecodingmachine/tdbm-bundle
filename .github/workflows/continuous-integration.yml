@@ -14,7 +14,8 @@ jobs:
     strategy:
       matrix:
         php-version:
-          - "8.0"
+          - "8.2"
+          - "8.5"
 
     services:
       mysql:
@@ -66,7 +67,7 @@ jobs:
     strategy:
       matrix:
         php-version:
-          - "8.0"
+          - "8.2"
 
     services:
       mysql:
