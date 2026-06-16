@@ -152,12 +152,12 @@ class FunctionalTest extends KernelTestCase
 
         $applicationTester = new ApplicationTester($application);
         $applicationTester->run(['command' => 'tdbm:generate']);
-        $this->assertStringContainsString('Finished regenerating DAOs and beans', $applicationTester->getDisplay());
+        $this->assertSame(0, $applicationTester->getStatusCode());
         $this->assertFileExists(__DIR__ . '/../tdbm.lock.yml');
 
         $applicationTester = new ApplicationTester($application);
         $applicationTester->run(['command' => 'tdbm:generate:other']);
-        $this->assertStringContainsString('Finished regenerating DAOs and beans', $applicationTester->getDisplay());
+        $this->assertSame(0, $applicationTester->getStatusCode());
         $this->assertFileExists(__DIR__ . '/../tdbm.other.lock.yml');
     }
 

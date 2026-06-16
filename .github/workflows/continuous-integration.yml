@@ -14,14 +14,15 @@ jobs:
     strategy:
       matrix:
         php-version:
-          - "8.0"
+          - "8.2"
+          - "8.5"
 
     services:
       mysql:
-        image: "mysql:5.7"
+        image: "mysql:8"
         env:
           MYSQL_ALLOW_EMPTY_PASSWORD: true
-          MYSQL_ROOT_PASSWORD:
+          MYSQL_ROOT_PASSWORD: ""
         ports:
           - "3306:3306"
 
@@ -52,11 +53,8 @@ jobs:
       - name: "Run PHPUnit"
         run: "vendor/bin/phpunit -c phpunit.xml.dist --coverage-clover=coverage.xml"
 
-      - name: "Upload Code Coverage"
-        if: ${{ matrix.php-version == '7.4' }}
-        uses: "codecov/codecov-action@v1"
-
       - name: "Run a static analysis with phpstan/phpstan"
+        if: ${{ matrix.php-version == '8.2' }}
         run: "composer phpstan -- --error-format=checkstyle | cs2pr"
 
   phpunit-prefer-lowest:
@@ -66,7 +64,7 @@ jobs:
     strategy:
       matrix:
         php-version:
-          - "8.0"
+          - "8.2"
 
     services:
       mysql:
