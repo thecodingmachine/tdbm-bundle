@@ -22,7 +22,7 @@
   ],
   "require" : {
     "php": "^8.0",
-    "thecodingmachine/tdbm": "dev-chore/symfony-7 as 6.0.0",
+    "thecodingmachine/tdbm": "~6.1.0",
     "doctrine/doctrine-bundle": "^2.2.2",
     "doctrine/orm": "^2",
     "symfony/http-kernel": "^5.0 || ^6.0 || ^7.0"
