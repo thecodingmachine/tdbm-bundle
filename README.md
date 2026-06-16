@@ -6,6 +6,6 @@
 
 # TDBM Symfony bundle
 
-TDBM integration package for Symfony 4.
+TDBM integration package for Symfony 5, 6 and 7.
 
 See [TDBM - Symfony integration documentation](https://thecodingmachine.github.io/tdbm/doc/install_symfony.html)
