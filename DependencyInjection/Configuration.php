@@ -14,7 +14,6 @@ class Configuration implements ConfigurationInterface
     {
         $treeBuilder = new TreeBuilder('tdbm');
         $rootNode = $treeBuilder->getRootNode();
-        assert($rootNode instanceof ArrayNodeDefinition);
 
         $rootNodeChildren = $rootNode->children();
         $this->buildServiceNode($rootNodeChildren);
